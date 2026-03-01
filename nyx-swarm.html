@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nyx Vortex Dashboard – Recursive Chain Mode</title>
+  <style>
+    html, body { margin: 0; background: radial-gradient(circle at center, #000010, #010004); font-family: monospace; color: #00ffee; overflow: hidden; }
+    canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
+    #ui { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.95); border: 1px solid #00ffee; border-radius: 10px; padding: 15px; z-index: 2; }
+    #compilePane { position: absolute; right: 0; top: 0; width: 35vw; height: 100vh; padding: 15px; overflow-y: scroll; background: rgba(10, 5, 15, 0.95); border-left: 1px solid #00ffee; color: #00ffcc; font-size: 11px; z-index: 2; }
+    .compileLine { margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="ui">
+    <strong>👁️ Nyx Vortex Dashboard</strong><br />
+    Total Coders: <span id="agentCount">0</span><br />
+    Status: <em>300,000 Agents, Chain Recursive</em>
+  </div>
+  <div id="compilePane"></div>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const compilePane = document.getElementById("compilePane");
+    const agentCountEl = document.getElementById("agentCount");
+
+    let agentId = 0;
+    const agents = [];
+    const MAX_AGENTS = 3000;
+
+    function spawnAgent(parent, depth = 0) {
+      let angle;
+      let radius;
+
+      if (!parent) {
+        agents.push({ id: agentId, parentId: null, x: canvas.width / 2, y: canvas.height / 2, angle: -Math.PI / 2, depth: 0 });
+        logAgent(agents[agentId]);
+        agentId++;
+      } else {
+        const angleOffset = Math.PI / 6 * (Math.random() > 0.5 ? 1 : -1);
+        angle = parent.angle + angleOffset;
+        radius = 4 + depth * 0.06 + Math.random() * 1.2;
+        const x = parent.x + Math.cos(angle) * radius;
+        const y = parent.y + Math.sin(angle) * radius;
+        agents.push({ id: agentId, parentId: parent.id, x, y, angle, depth });
+        logAgent(agents[agentId]);
+        agentId++;
+      }
+
+      agentCountEl.textContent = agents.length;
+      if (agents.length < MAX_AGENTS) {
+        if (parent || agentId === 1) {
+          setTimeout(() => spawnAgent(agents[agentId - 1], depth + 1), 1);
+          if (Math.random() > 0.48 && agentId < MAX_AGENTS) {
+            setTimeout(() => spawnAgent(agents[agentId - 1], depth + 1), 1);
+          }
+        } else {
+          setTimeout(() => spawnAgent(agents[agentId - 1], depth + 1), 1);
+        }
+      }
+    }
+
+    function logAgent(agent) {
+      const logLine = document.createElement("div");
+      logLine.className = "compileLine";
+      logLine.textContent = `👁️ agent[${agent.id}]: render('nyx.chain', parent=${agent.parentId}, depth=${agent.depth})`;
+      compilePane.appendChild(logLine);
+      compilePane.scrollTop = compilePane.scrollHeight;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      agents.forEach((agent) => {
+        if (agent.parentId !== null) {
+          const parent = agents[agent.parentId];
+          ctx.beginPath();
+          ctx.moveTo(parent.x, parent.y);
+          ctx.lineTo(agent.x, agent.y);
+          ctx.strokeStyle = `hsl(${agent.id % 360}, 100%, 65%)`;
+          ctx.lineWidth = 1 + agent.depth * 0.014;
+          ctx.globalAlpha = 0.18 + (agent.depth * 0.005);
+          ctx.shadowColor = ctx.strokeStyle;
+          ctx.shadowBlur = 9;
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, 1.6, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsl(${agent.id % 360}, 100%, 65%)`;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 13;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    spawnAgent(null);
+    draw();
+  </script>
+</body>
+</html>
