@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nyx Vortex Dashboard – Interactive Recursive Mode</title>
+  <style>
+    :root {
+      --bg-1: #000010;
+      --bg-2: #010004;
+      --panel: rgba(0, 0, 0, 0.88);
+      --panel-soft: rgba(10, 5, 15, 0.9);
+      --border: #00ffee;
+      --text: #d8fff6;
+      --accent: #00ffcc;
+      --warn: #ffd166;
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, var(--bg-1), var(--bg-2));
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+
+    .panel {
+      position: absolute;
+      z-index: 3;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 0 18px rgba(0, 255, 238, 0.2);
+      backdrop-filter: blur(3px);
+    }
+
+    #ui {
+      top: 12px;
+      left: 12px;
+      width: min(420px, calc(100vw - 24px));
+      padding: 14px;
+    }
+
+    #thoughtPane,
+    #outcomePane {
+      right: 12px;
+      width: min(34vw, 500px);
+      padding: 10px;
+      background: var(--panel-soft);
+    }
+
+    #thoughtPane {
+      top: 12px;
+      height: min(56vh, 460px);
+      overflow: auto;
+    }
+
+    #outcomePane {
+      top: calc(min(56vh, 460px) + 28px);
+      height: calc(100vh - min(56vh, 460px) - 40px);
+      overflow: auto;
+    }
+
+    .title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .row label {
+      min-width: 108px;
+      font-size: 12px;
+      color: #9af8e8;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: rgba(0, 255, 238, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    button:hover {
+      background: rgba(0, 255, 238, 0.18);
+    }
+
+    .line {
+      margin-bottom: 4px;
+      font-size: 11px;
+      color: var(--accent);
+      line-height: 1.45;
+    }
+
+    .dim {
+      color: #9bd6cb;
+      font-size: 11px;
+    }
+
+    .outcome {
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px dashed rgba(0, 255, 238, 0.4);
+      border-radius: 8px;
+      background: rgba(0, 255, 204, 0.03);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div id="ui" class="panel">
+    <div class="title">👁️ Nyx Vortex Dashboard</div>
+    <div class="dim">Interactive recursive chain simulation</div>
+
+    <div class="grid">
+      <div>Total agents</div><div id="agentCount">0</div>
+      <div>Max depth</div><div id="maxDepth">0</div>
+      <div>Branch events</div><div id="branchCount">0</div>
+      <div>Status</div><div id="statusText">Idle</div>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <label for="maxAgents">Max agents</label>
+        <input id="maxAgents" type="range" min="100" max="7000" step="100" value="3000" />
+        <span id="maxAgentsValue" class="dim">3000</span>
+      </div>
+
+      <div class="row">
+        <label for="branchChance">Branch chance</label>
+        <input id="branchChance" type="range" min="0" max="95" step="1" value="52" />
+        <span id="branchChanceValue" class="dim">52%</span>
+      </div>
+
+      <div class="row">
+        <label for="spawnDelay">Spawn delay</label>
+        <input id="spawnDelay" type="range" min="0" max="30" step="1" value="1" />
+        <span id="spawnDelayValue" class="dim">1ms</span>
+      </div>
+
+      <div class="buttons">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resumeBtn">Resume</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="thoughtPane" class="panel">
+    <div class="title">Thought process</div>
+    <div id="thoughtLog" class="dim">No events yet.</div>
+  </div>
+
+  <div id="outcomePane" class="panel">
+    <div class="title">Outcome</div>
+    <div id="outcomeLog" class="dim">Run the simulation to generate outcomes.</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const thoughtLog = document.getElementById("thoughtLog");
+    const outcomeLog = document.getElementById("outcomeLog");
+
+    const agentCountEl = document.getElementById("agentCount");
+    const maxDepthEl = document.getElementById("maxDepth");
+    const branchCountEl = document.getElementById("branchCount");
+    const statusTextEl = document.getElementById("statusText");
+
+    const maxAgentsInput = document.getElementById("maxAgents");
+    const branchChanceInput = document.getElementById("branchChance");
+    const spawnDelayInput = document.getElementById("spawnDelay");
+
+    const maxAgentsValue = document.getElementById("maxAgentsValue");
+    const branchChanceValue = document.getElementById("branchChanceValue");
+    const spawnDelayValue = document.getElementById("spawnDelayValue");
+
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resumeBtn = document.getElementById("resumeBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const state = {
+      running: false,
+      paused: false,
+      completed: false,
+      agentId: 0,
+      agents: [],
+      branchEvents: 0,
+      maxDepth: 0,
+      timeoutIds: [],
+      config: {
+        maxAgents: 3000,
+        branchChance: 0.52,
+        spawnDelayMs: 1,
+      },
+    };
+
+    function onResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", onResize);
+
+    function updateControlLabels() {
+      maxAgentsValue.textContent = maxAgentsInput.value;
+      branchChanceValue.textContent = `${branchChanceInput.value}%`;
+      spawnDelayValue.textContent = `${spawnDelayInput.value}ms`;
+    }
+
+    function syncConfig() {
+      state.config.maxAgents = Number(maxAgentsInput.value);
+      state.config.branchChance = Number(branchChanceInput.value) / 100;
+      state.config.spawnDelayMs = Number(spawnDelayInput.value);
+      updateControlLabels();
+    }
+
+    function addThought(message, isWarning = false) {
+      if (thoughtLog.classList.contains("dim")) {
+        thoughtLog.classList.remove("dim");
+        thoughtLog.textContent = "";
+      }
+
+      const line = document.createElement("div");
+      line.className = `line${isWarning ? " warn" : ""}`;
+      line.textContent = message;
+      thoughtLog.appendChild(line);
+      thoughtLog.scrollTop = thoughtLog.scrollHeight;
+
+      while (thoughtLog.childNodes.length > 150) {
+        thoughtLog.removeChild(thoughtLog.firstChild);
+      }
+    }
+
+    function addOutcome(summary) {
+      if (outcomeLog.classList.contains("dim")) {
+        outcomeLog.classList.remove("dim");
+        outcomeLog.textContent = "";
+      }
+
+      const card = document.createElement("div");
+      card.className = "outcome";
+      card.innerHTML = summary;
+      outcomeLog.prepend(card);
+    }
+
+    function setStatus(text) {
+      statusTextEl.textContent = text;
+    }
+
+    function updateStats() {
+      agentCountEl.textContent = String(state.agents.length);
+      maxDepthEl.textContent = String(state.maxDepth);
+      branchCountEl.textContent = String(state.branchEvents);
+    }
+
+    function clearTimers() {
+      state.timeoutIds.forEach((id) => clearTimeout(id));
+      state.timeoutIds = [];
+    }
+
+    function resetSimulation(clearOutcome = false) {
+      clearTimers();
+      state.running = false;
+      state.paused = false;
+      state.completed = false;
+      state.agentId = 0;
+      state.agents = [];
+      state.branchEvents = 0;
+      state.maxDepth = 0;
+      updateStats();
+      setStatus("Idle");
+
+      thoughtLog.classList.add("dim");
+      thoughtLog.textContent = "No events yet.";
+
+      if (clearOutcome) {
+        outcomeLog.classList.add("dim");
+        outcomeLog.textContent = "Run the simulation to generate outcomes.";
+      }
+    }
+
+    function scheduleSpawn(parent, depth) {
+      if (!state.running || state.paused || state.completed) {
+        return;
+      }
+
+      const id = setTimeout(() => {
+        spawnAgent(parent, depth);
+      }, state.config.spawnDelayMs);
+      state.timeoutIds.push(id);
+    }
+
+    function spawnAgent(parent, depth = 0) {
+      if (!state.running || state.paused || state.completed) {
+        return;
+      }
+
+      if (state.agents.length >= state.config.maxAgents) {
+        completeRun("Target reached");
+        return;
+      }
+
+      if (!parent) {
+        state.agents.push({
+          id: state.agentId,
+          parentId: null,
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          angle: -Math.PI / 2,
+          depth: 0,
+        });
+
+        addThought("seed[0] initialized at center.");
+        state.agentId += 1;
+      } else {
+        const angleOffset = Math.PI / 6 * (Math.random() > 0.5 ? 1 : -1);
+        const angle = parent.angle + angleOffset;
+        const radius = 4 + depth * 0.06 + Math.random() * 1.2;
+        const x = parent.x + Math.cos(angle) * radius;
+        const y = parent.y + Math.sin(angle) * radius;
+
+        const newAgent = {
+          id: state.agentId,
+          parentId: parent.id,
+          x,
+          y,
+          angle,
+          depth,
+        };
+
+        state.agents.push(newAgent);
+        state.agentId += 1;
+        state.maxDepth = Math.max(state.maxDepth, depth);
+
+        if (depth % 20 === 0 || newAgent.id < 25) {
+          addThought(`agent[${newAgent.id}] expanded from parent=${newAgent.parentId}, depth=${depth}.`);
+        }
+      }
+
+      updateStats();
+
+      const latest = state.agents[state.agents.length - 1];
+      scheduleSpawn(latest, depth + 1);
+
+      if (Math.random() < state.config.branchChance && state.agents.length < state.config.maxAgents) {
+        state.branchEvents += 1;
+        updateStats();
+        addThought(`branch event ${state.branchEvents}: forked from agent[${latest.id}] at depth=${depth + 1}.`);
+        scheduleSpawn(latest, depth + 1);
+      }
+    }
+
+    function completeRun(reason) {
+      if (state.completed) {
+        return;
+      }
+
+      state.completed = true;
+      state.running = false;
+      state.paused = false;
+      clearTimers();
+      setStatus("Completed");
+
+      const avgDepth = state.agents.length ? (state.agents.reduce((sum, item) => sum + item.depth, 0) / state.agents.length).toFixed(2) : "0.00";
+      const summary = [
+        `<strong>${reason}</strong>`,
+        `Agents generated: <strong>${state.agents.length}</strong>`,
+        `Max depth reached: <strong>${state.maxDepth}</strong>`,
+        `Branch events: <strong>${state.branchEvents}</strong>`,
+        `Average depth: <strong>${avgDepth}</strong>`,
+      ].join("<br />");
+
+      addOutcome(summary);
+      addThought(`run complete: ${reason.toLowerCase()} with ${state.agents.length} agents.`);
+    }
+
+    function startSimulation() {
+      syncConfig();
+      resetSimulation(false);
+      state.running = true;
+      setStatus("Running");
+      addThought(
+        `run started with maxAgents=${state.config.maxAgents}, branchChance=${Math.round(state.config.branchChance * 100)}%, spawnDelay=${state.config.spawnDelayMs}ms.`
+      );
+      spawnAgent(null, 0);
+    }
+
+    function pauseSimulation() {
+      if (!state.running || state.paused || state.completed) {
+        return;
+      }
+      state.paused = true;
+      clearTimers();
+      setStatus("Paused");
+      addThought("run paused by operator.", true);
+    }
+
+    function resumeSimulation() {
+      if (!state.running || !state.paused || state.completed) {
+        return;
+      }
+      state.paused = false;
+      setStatus("Running");
+      addThought("run resumed by operator.");
+
+      const latest = state.agents[state.agents.length - 1];
+      if (!latest) {
+        spawnAgent(null, 0);
+        return;
+      }
+      scheduleSpawn(latest, latest.depth + 1);
+    }
+
+    function hardReset() {
+      resetSimulation(true);
+      addThought("dashboard reset complete.");
+    }
+
+    maxAgentsInput.addEventListener("input", updateControlLabels);
+    branchChanceInput.addEventListener("input", updateControlLabels);
+    spawnDelayInput.addEventListener("input", updateControlLabels);
+
+    startBtn.addEventListener("click", startSimulation);
+    pauseBtn.addEventListener("click", pauseSimulation);
+    resumeBtn.addEventListener("click", resumeSimulation);
+    resetBtn.addEventListener("click", hardReset);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      state.agents.forEach((agent) => {
+        if (agent.parentId !== null) {
+          const parent = state.agents[agent.parentId];
+          if (parent) {
+            ctx.beginPath();
+            ctx.moveTo(parent.x, parent.y);
+            ctx.lineTo(agent.x, agent.y);
+            ctx.strokeStyle = `hsl(${agent.id % 360}, 100%, 65%)`;
+            ctx.lineWidth = 1 + agent.depth * 0.014;
+            ctx.globalAlpha = Math.min(0.22 + agent.depth * 0.003, 0.9);
+            ctx.shadowColor = ctx.strokeStyle;
+            ctx.shadowBlur = 8;
+            ctx.stroke();
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, 1.7, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsl(${agent.id % 360}, 100%, 65%)`;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 12;
+        ctx.globalAlpha = 0.88;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    updateControlLabels();
+    draw();
+  </script>
+</body>
+</html>
