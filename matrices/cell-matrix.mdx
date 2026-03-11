@@ -1,0 +1,38 @@
+---
+title: "Cell matrix"
+description: "Canonical 1,000-cell matrix with reusable definitions, operations, and agent templates."
+---
+
+Use this reference to map every **Cell ID** to a **Tier**, **Dimension**, and **Function**.
+
+Cell IDs follow one canonical sequence: **Tier → Dimension → Function**.
+
+## Download data
+
+- CSV matrix: [`data/cell-matrix.csv`](/data/cell-matrix.csv)
+- JSON catalog with per-cell agent profiles: [`data/cell-catalog.json`](/data/cell-catalog.json)
+
+## Use these files for every cell
+
+- Cell schema: [`cells/cell.schema.json`](/cells/cell.schema.json)
+- Cell operation workflow: [`cells/cell-operation.md`](/cells/cell-operation.md)
+- Agent system prompt template: [`cells/agent-system-prompt.md`](/cells/agent-system-prompt.md)
+
+## Column definitions
+
+- `Cell ID`: Sequential identifier from `1` to `1000`
+- `Tier`: Tier symbol and name
+- `Dimension`: Business or system layer
+- `Function`: Function assigned within each dimension
+
+## What is inside the JSON catalog
+
+Each cell includes:
+
+- ordered tier, dimension, and function indexes
+- a stable cell slug
+- an agent profile with role, knowledge scope, and operating directives
+
+## Explore interactively
+
+Open the interactive studio: [\`matrices/cell-studio\`](/matrices/cell-studio)
