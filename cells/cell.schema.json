@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/cell.schema.json",
+  "title": "Cell definition",
+  "description": "Standard shape for a single operational cell and its agent.",
+  "type": "object",
+  "required": ["cellId", "tier", "dimension", "function", "agent"],
+  "properties": {
+    "cellId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "tier": {
+      "type": "object",
+      "required": ["symbol", "name", "label"],
+      "properties": {
+        "symbol": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" }
+      }
+    },
+    "dimension": {
+      "type": "string"
+    },
+    "function": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "object",
+      "required": ["id", "name", "role", "knowledgeScope", "operatingDirectives"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "knowledgeScope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "operatingDirectives": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}
