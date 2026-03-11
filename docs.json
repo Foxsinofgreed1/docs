@@ -48,7 +48,8 @@
           {
             "group": "Showcase",
             "pages": [
-              "nyx-swarm"
+              "nyx-swarm",
+              "matrices/cell-matrix"
             ]
           }
         ]
