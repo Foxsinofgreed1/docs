@@ -1,0 +1,173 @@
+---
+title: "3mil matrix viewer roadmap"
+description: "Plan the full lifecycle for your matrix viewer HTML prototype"
+---
+
+## Goal
+
+Turn your local `3mil_matrix_viewer (1) (1) (2).html` prototype into a reliable product that you can ship, maintain, and scale.
+
+## Working source of truth
+
+Treat `3mil.txt` as the baseline requirements document for every phase of this roadmap.
+
+- Extract feature requirements from `3mil.txt` first.
+- Map each requirement to a roadmap phase before implementation.
+- Track open questions from `3mil.txt` in a decision log.
+- Do not ship features that conflict with `3mil.txt` without an explicit update.
+
+## Requirement intake workflow for `3mil.txt`
+
+Use this workflow when you add new content from `3mil.txt`.
+
+1. Copy each requirement into a structured checklist.
+2. Tag each item as `v1`, `v1.1`, or `later`.
+3. Mark each item as `must`, `should`, or `nice-to-have`.
+4. Link each item to a validation test.
+5. Add unresolved items to a blockers list with owner and due date.
+
+## Phase 1: Understand the current file
+
+### 1) Baseline the prototype
+
+Define what works today.
+
+- List every current feature.
+- Capture the expected input and output.
+- Save screenshots of key states.
+- Record known issues and rough performance.
+
+### 2) Clean structure and naming
+
+Make the file easier to evolve.
+
+- Split HTML, CSS, and JavaScript into separate files.
+- Remove duplicate code and dead code.
+- Rename variables and functions for clarity.
+- Add comments only where logic is not obvious.
+
+### 3) Define success metrics
+
+Set measurable goals before you rebuild.
+
+- Target page load time.
+- Target interaction latency.
+- Target browser support.
+- Target error rate.
+
+## Phase 2: Product and UX plan
+
+### 4) Lock scope for v1
+
+Define what ships first.
+
+- Core matrix interactions.
+- Core filters and sorting.
+- Essential import and export.
+- Basic empty, loading, and error states.
+
+### 5) Design flows and states
+
+Design the full user journey.
+
+- First visit.
+- Returning visit.
+- Power user workflow.
+- Failure and recovery flow.
+
+### 6) Accessibility and usability
+
+Build for all users.
+
+- Keyboard navigation.
+- Screen reader labels.
+- Color contrast checks.
+- Focus state visibility.
+
+## Phase 3: Engineering architecture
+
+### 7) Choose your stack
+
+Pick a maintainable path.
+
+- Keep static HTML with modular JavaScript for a simple app.
+- Move to React or Vue if state becomes complex.
+- Add TypeScript if logic and data shapes grow.
+
+### 8) Model matrix data
+
+Create a stable contract.
+
+- Define row, column, and cell schemas.
+- Define optional metadata fields.
+- Define import and export formats.
+- Version the schema from day one.
+
+### 9) Build a test strategy
+
+Protect behavior as features grow.
+
+- Unit tests for parsing, filtering, and transforms.
+- Integration tests for matrix interactions.
+- Visual regression checks for layout stability.
+- Smoke tests for critical user flows.
+
+## Phase 4: Delivery and operations
+
+### 10) Ship in milestones
+
+Reduce risk with incremental releases.
+
+1. Internal alpha with sample data.
+2. Closed beta with real users.
+3. Public v1 with documentation.
+
+### 11) Add observability
+
+See real-world usage and failures.
+
+- Client-side error tracking.
+- Performance monitoring.
+- Usage analytics for key actions.
+- Structured logs for debugging.
+
+### 12) Plan maintenance
+
+Keep the product healthy after launch.
+
+- Monthly dependency updates.
+- Quarterly accessibility audits.
+- Regular browser compatibility checks.
+- Public changelog and release notes.
+
+## 30-60-90 day execution plan
+
+### Days 1-30
+
+- Audit the current file.
+- Split into modular files.
+- Define v1 scope and success metrics.
+- Draft data schema and technical design.
+
+### Days 31-60
+
+- Build v1 core interactions.
+- Implement import and export.
+- Add tests and basic telemetry.
+- Run internal alpha and fix critical issues.
+
+### Days 61-90
+
+- Run closed beta.
+- Improve UX and accessibility.
+- Finalize docs and onboarding.
+- Launch public v1.
+
+## Ready-to-run checklist
+
+- [ ] The v1 scope is frozen.
+- [ ] Data contracts are versioned.
+- [ ] Core flows have tests.
+- [ ] Accessibility checks pass.
+- [ ] Error and performance tracking is live.
+- [ ] User docs and changelog are ready.

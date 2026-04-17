@@ -50,7 +50,8 @@
             "pages": [
               "nyx-swarm",
               "matrices/cell-matrix",
-              "matrices/cell-studio"
+              "matrices/cell-studio",
+              "planning/3mil-matrix-viewer-roadmap"
             ]
           }
         ]
