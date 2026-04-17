@@ -7,6 +7,25 @@ description: "Plan the full lifecycle for your matrix viewer HTML prototype"
 
 Turn your local `3mil_matrix_viewer (1) (1) (2).html` prototype into a reliable product that you can ship, maintain, and scale.
 
+## Working source of truth
+
+Treat `3mil.txt` as the baseline requirements document for every phase of this roadmap.
+
+- Extract feature requirements from `3mil.txt` first.
+- Map each requirement to a roadmap phase before implementation.
+- Track open questions from `3mil.txt` in a decision log.
+- Do not ship features that conflict with `3mil.txt` without an explicit update.
+
+## Requirement intake workflow for `3mil.txt`
+
+Use this workflow when you add new content from `3mil.txt`.
+
+1. Copy each requirement into a structured checklist.
+2. Tag each item as `v1`, `v1.1`, or `later`.
+3. Mark each item as `must`, `should`, or `nice-to-have`.
+4. Link each item to a validation test.
+5. Add unresolved items to a blockers list with owner and due date.
+
 ## Phase 1: Understand the current file
 
 ### 1) Baseline the prototype
@@ -152,4 +171,3 @@ Keep the product healthy after launch.
 - [ ] Accessibility checks pass.
 - [ ] Error and performance tracking is live.
 - [ ] User docs and changelog are ready.
-
